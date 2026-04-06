@@ -79,7 +79,7 @@ function next() {
 
   if (index === -1) {
     index = 0;
-    setReason(reasons[0], 'reasons why i love you', `1 of ${reasons.length}`, 'next', 0);
+    setReason(reasons[0], 'For my princess❤️', `1 of ${reasons.length}`, 'next', 0);
     return;
   }
 
@@ -88,7 +88,7 @@ function next() {
     const isLast = index === reasons.length - 1;
     setReason(
       reasons[index],
-      'reasons why i love you',
+      'For my princess❤️',
       `${index + 1} of ${reasons.length}`,
       isLast ? 'one more thing' : 'next',
       index
