@@ -7,15 +7,6 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=Jost:wght@300;400&display=swap" rel="stylesheet" />
-  <style>
-    /* ============================================================
-       ✏️  JOUW TEKST — pas alleen dit blok aan
-       Elke regel tussen aanhalingstekens is één zin.
-       De typewriter typt ze één voor één uit.
-       Voeg zoveel regels toe als je wil.
-       ============================================================ */
-    /* ZIE JAVASCRIPT ONDERAAN — zoek naar: YOUR TEXT HERE */
-  </style>
 </head>
 <body>
 
@@ -35,7 +26,6 @@
 html, body {
   height: 100%; width: 100%; overflow: hidden;
   background: #080c1a;
-  font-family: 'Cormorant Garamond', serif;
 }
 
 canvas#sky {
@@ -54,11 +44,9 @@ canvas#sky {
 #text-wrap {
   max-width: min(640px, 90vw);
   font-family: 'Cormorant Garamond', serif;
-  font-weight: 300;
-  font-style: italic;
+  font-weight: 300; font-style: italic;
   font-size: clamp(20px, 4vw, 28px);
-  line-height: 1.85;
-  color: #dde8ff;
+  line-height: 1.85; color: #dde8ff;
   text-align: center;
   text-shadow: 0 0 40px rgba(140, 180, 255, 0.15);
   letter-spacing: 0.02em;
@@ -68,8 +56,7 @@ canvas#sky {
   display: inline-block;
   color: rgba(180, 210, 255, 0.6);
   animation: blink 1s step-start infinite;
-  margin-left: 2px;
-  font-style: normal;
+  margin-left: 2px; font-style: normal;
 }
 
 @keyframes blink {
@@ -78,35 +65,28 @@ canvas#sky {
 }
 
 #nav {
-  position: fixed;
-  bottom: 28px;
-  left: 50%;
-  transform: translateX(-50%);
-  opacity: 0;
-  transition: opacity 1s ease;
+  position: fixed; bottom: 28px;
+  left: 50%; transform: translateX(-50%);
+  opacity: 0; transition: opacity 1s ease;
 }
-
 #nav.show { opacity: 1; }
 
 #back-link {
   font-family: 'Jost', sans-serif;
-  font-weight: 300;
-  font-size: 11px;
+  font-weight: 300; font-size: 11px;
   letter-spacing: 0.2em;
   color: rgba(160, 185, 230, 0.35);
-  text-decoration: none;
-  text-transform: lowercase;
+  text-decoration: none; text-transform: lowercase;
   transition: color 0.2s;
 }
 #back-link:hover { color: rgba(180, 210, 255, 0.65); }
 </style>
 
 <script>
-/* ============================================================
-   ✏️  JOUW TEKST — pas dit aan
-   Elke regel is één zin die getypt wordt.
-   Na elke zin is er een korte pauze voor de volgende begint.
-   ============================================================ */
+// ============================================================
+// ✏️  JOUW TEKST — alleen dit aanpassen
+// Elke zin op een eigen regel, tussen aanhalingstekens, komma erna.
+// ============================================================
 const lines = [
   "I don't really know how to start this.",
   "But I think that's kind of the point.",
@@ -121,23 +101,16 @@ const lines = [
   "I love you, Baneen.",
   "More than these words can hold.",
 ];
-/* ============================================================
-   ✏️  INSTELLINGEN (optioneel aanpassen)
-   typingSpeed  = hoe snel letters verschijnen (ms per letter)
-   pauseAfter   = pauze na elke zin (ms)
-   pauseBetween = pauze tussen zinnen (ms)
-   ============================================================ */
-const typingSpeed  = 38;   // ms per letter
-const pauseAfter   = 900;  // ms na punt/uitroepteken
-const pauseBetween = 400;  // ms tussen zinnen
+// ============================================================
 
-// ── Engine (niet aanpassen) ─────────────────────────────────
+const typingSpeed  = 38;
+const pauseAfter   = 900;
+const pauseBetween = 400;
+
 const output = document.getElementById('output');
 const nav    = document.getElementById('nav');
 
-async function sleep(ms) {
-  return new Promise(r => setTimeout(r, ms));
-}
+async function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
 
 async function typeLine(text) {
   for (const ch of text) {
@@ -161,7 +134,6 @@ async function run() {
 
 run();
 
-// ── Stars ───────────────────────────────────────────────────
 (function() {
   const canvas = document.getElementById('sky');
   const ctx = canvas.getContext('2d');
@@ -193,7 +165,8 @@ run();
     );
     grad.addColorStop(0, 'rgba(20, 35, 72, 0.55)');
     grad.addColorStop(1, 'rgba(0,0,0,0)');
-    ctx.fillStyle = grad; ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.fillStyle = grad;
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
     for (const s of stars) {
       const alpha = s.a * (0.6 + 0.4 * Math.sin(t * s.speed * 60 + s.phase));
       ctx.beginPath(); ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
