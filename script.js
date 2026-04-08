@@ -254,3 +254,27 @@ document.addEventListener('touchend', e => {
   const dy = e.changedTouches[0].clientY - touchStartY;
   if (Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > 45 && introDone) next();
 }, { passive: true });
+
+// ── Love timer ──────────────────────────────────────────────────────────────
+(function startTimer() {
+  const start = new Date('2026-03-26T00:00:00');
+  const timerEl = document.getElementById('timer');
+
+  function update() {
+    const now = new Date();
+    const diff = now - start;
+
+    if (diff < 0) { timerEl.textContent = 'almost time ♡'; return; }
+
+    const days    = Math.floor(diff / (1000 * 60 * 60 * 24));
+    const hours   = Math.floor((diff / (1000 * 60 * 60)) % 24);
+    const minutes = Math.floor((diff / (1000 * 60)) % 60);
+    const seconds = Math.floor((diff / 1000) % 60);
+
+    const pad = n => String(n).padStart(2, '0');
+    timerEl.textContent = `${days}d ${pad(hours)}h ${pad(minutes)}m ${pad(seconds)}s`;
+  }
+
+  update();
+  setInterval(update, 1000);
+})();
