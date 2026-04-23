@@ -353,7 +353,11 @@ function showLoggedInUi() {
   loginScreen.style.display = 'none';
   logoutBtn.style.display = 'block';
 
-  if (window.introDone) {
+  const introFinished = sessionStorage.getItem('introDone') === 'true';
+
+  if (introFinished) {
+    window.introDone = true;
+    window.introPlayed = true;
     intro.style.display = 'none';
     homeScene.classList.add('visible');
   } else {
@@ -411,6 +415,7 @@ passwordInput.addEventListener('keydown', (e) => {
 });
 
 logoutBtn.addEventListener('click', async () => {
+  sessionStorage.removeItem('introDone');
   await signOut(auth);
 });
 
@@ -438,6 +443,7 @@ onAuthStateChanged(auth, (user) => {
     if (window.introDone) return;
 
     window.introDone = true;
+    sessionStorage.setItem('introDone', 'true');
 
     if (typeof window.spawnBurst === 'function') {
       window.spawnBurst(window.innerWidth / 2, window.innerHeight / 2, 55);
@@ -454,4 +460,3 @@ onAuthStateChanged(auth, (user) => {
 
 </body>
 </html>
-```
