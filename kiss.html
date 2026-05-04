@@ -1,0 +1,597 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<title>for my princess</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=Jost:wght@300;400&display=swap" rel="stylesheet" />
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body {
+  height: 100%; width: 100%;
+  background: #07091a;
+  overflow: hidden;
+  font-family: 'Jost', sans-serif;
+  cursor: none;
+}
+
+/* ── Custom cursor ── */
+#cursor {
+  position: fixed;
+  width: 18px; height: 18px;
+  pointer-events: none;
+  z-index: 9999;
+  transform: translate(-50%, -50%);
+  transition: transform 0.1s ease;
+  font-size: 18px;
+  line-height: 1;
+}
+#cursor.pressed { transform: translate(-50%, -50%) scale(1.6); }
+
+/* ── Canvases ── */
+canvas {
+  position: fixed; inset: 0;
+  width: 100%; height: 100%;
+  pointer-events: none;
+}
+#sky   { z-index: 0; }
+#fx    { z-index: 2; }
+
+/* ── Stage ── */
+#stage {
+  position: fixed; inset: 0; z-index: 5;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  gap: 0;
+  visibility: hidden;
+}
+
+/* ── Top label ── */
+#top-label {
+  font-family: 'Jost', sans-serif;
+  font-weight: 300; font-size: 10px;
+  letter-spacing: 0.32em; text-transform: lowercase;
+  color: rgba(255, 180, 200, 0.28);
+  margin-bottom: 52px;
+  opacity: 0;
+  animation: fadeUp 1.2s ease 0.4s forwards;
+}
+
+/* ── Counter ── */
+#counter-wrap {
+  position: relative;
+  display: flex; flex-direction: column;
+  align-items: center;
+  margin-bottom: 56px;
+}
+
+#count-number {
+  font-family: 'Cormorant Garamond', serif;
+  font-weight: 300;
+  font-size: clamp(88px, 22vw, 148px);
+  color: #ffe0ec;
+  line-height: 0.9;
+  letter-spacing: -0.02em;
+  text-shadow:
+    0 0 60px rgba(255, 150, 190, 0.35),
+    0 0 120px rgba(255, 120, 170, 0.15);
+  transition: transform 0.08s ease;
+  user-select: none;
+  opacity: 0;
+  animation: fadeUp 1s ease 0.7s forwards;
+}
+
+#count-number.bump {
+  animation: bump 0.22s ease forwards;
+}
+
+@keyframes bump {
+  0%   { transform: scale(1); }
+  40%  { transform: scale(1.08); }
+  100% { transform: scale(1); }
+}
+
+#count-sub {
+  font-family: 'Cormorant Garamond', serif;
+  font-weight: 300; font-style: italic;
+  font-size: clamp(14px, 3vw, 18px);
+  letter-spacing: 0.12em;
+  color: rgba(255, 180, 210, 0.38);
+  margin-top: 14px;
+  opacity: 0;
+  animation: fadeUp 1s ease 1s forwards;
+}
+
+/* ── Kiss button ── */
+#kiss-btn {
+  position: relative;
+  width: clamp(160px, 38vw, 210px);
+  height: clamp(160px, 38vw, 210px);
+  border-radius: 50%;
+  border: none;
+  background: radial-gradient(ellipse at 38% 38%,
+    rgba(255, 180, 210, 0.22) 0%,
+    rgba(200, 100, 140, 0.08) 60%,
+    transparent 100%
+  );
+  cursor: none;
+  outline: none;
+  -webkit-tap-highlight-color: transparent;
+  display: flex; align-items: center; justify-content: center;
+  flex-direction: column;
+  gap: 6px;
+  opacity: 0;
+  animation: fadeUp 1.1s ease 1.2s forwards;
+  transition: transform 0.1s ease;
+}
+
+/* Outer ring */
+#kiss-btn::before {
+  content: '';
+  position: absolute; inset: -2px;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 160, 200, 0.18);
+  animation: ringPulse 3s ease-in-out infinite;
+}
+
+/* Middle ring */
+#kiss-btn::after {
+  content: '';
+  position: absolute; inset: -18px;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 140, 185, 0.09);
+  animation: ringPulse 3s ease-in-out infinite 0.5s;
+}
+
+@keyframes ringPulse {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50%       { transform: scale(1.04); opacity: 0.5; }
+}
+
+.outer-ring {
+  position: absolute; inset: -38px;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 130, 180, 0.05);
+  animation: ringPulse 3s ease-in-out infinite 1s;
+  pointer-events: none;
+}
+
+#kiss-icon {
+  font-size: clamp(52px, 12vw, 72px);
+  line-height: 1;
+  filter: drop-shadow(0 0 18px rgba(255, 120, 170, 0.5));
+  transition: transform 0.1s ease, filter 0.1s ease;
+  pointer-events: none;
+  user-select: none;
+}
+
+#kiss-hint {
+  font-family: 'Jost', sans-serif;
+  font-weight: 300; font-size: 9px;
+  letter-spacing: 0.28em; text-transform: lowercase;
+  color: rgba(255, 170, 200, 0.3);
+  pointer-events: none;
+  user-select: none;
+  transition: opacity 0.3s ease;
+}
+
+#kiss-btn:active {
+  transform: scale(0.94);
+}
+
+#kiss-btn:active #kiss-icon {
+  transform: scale(1.15);
+  filter: drop-shadow(0 0 28px rgba(255, 100, 160, 0.8));
+}
+
+/* ── Milestone toast ── */
+#milestone {
+  position: fixed;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%) scale(0.85);
+  z-index: 50;
+  background: rgba(12, 8, 22, 0.92);
+  border: 1px solid rgba(255, 160, 200, 0.2);
+  border-radius: 22px;
+  padding: 32px 40px;
+  text-align: center;
+  backdrop-filter: blur(20px);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.4s ease, transform 0.4s ease;
+  max-width: min(340px, 88vw);
+}
+#milestone.show {
+  opacity: 1;
+  transform: translate(-50%, -50%) scale(1);
+  pointer-events: all;
+}
+
+#milestone-emoji { font-size: 38px; margin-bottom: 14px; }
+#milestone-text {
+  font-family: 'Cormorant Garamond', serif;
+  font-weight: 300; font-style: italic;
+  font-size: clamp(18px, 4vw, 22px);
+  color: #ffe0ec; line-height: 1.6;
+  letter-spacing: 0.02em;
+}
+#milestone-close {
+  margin-top: 20px;
+  font-family: 'Jost', sans-serif;
+  font-weight: 300; font-size: 10px;
+  letter-spacing: 0.22em; text-transform: lowercase;
+  color: rgba(255, 170, 200, 0.4);
+  background: none; border: none; cursor: pointer;
+}
+#milestone-close:hover { color: rgba(255, 190, 215, 0.7); }
+
+/* ── Floating kiss emojis ── */
+.float-kiss {
+  position: fixed;
+  pointer-events: none;
+  z-index: 10;
+  font-size: 22px;
+  animation: floatUp 1.8s ease forwards;
+  user-select: none;
+}
+
+@keyframes floatUp {
+  0%   { opacity: 1; transform: translateY(0) scale(1) rotate(0deg); }
+  60%  { opacity: 0.8; }
+  100% { opacity: 0; transform: translateY(-140px) scale(0.4) rotate(25deg); }
+}
+
+/* ── Back link ── */
+#back-link {
+  position: fixed; bottom: 28px; left: 50%;
+  transform: translateX(-50%);
+  font-weight: 300; font-size: 11px;
+  letter-spacing: 0.2em; text-transform: lowercase;
+  color: rgba(255, 170, 200, 0.22);
+  text-decoration: none;
+  transition: color 0.2s;
+  z-index: 20;
+  opacity: 0;
+  animation: fadeUp 1s ease 1.5s forwards;
+}
+#back-link:hover { color: rgba(255, 200, 220, 0.6); }
+
+/* ── Shared fade ── */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(14px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── Heartbeat glow on bg ── */
+#heartbeat-glow {
+  position: fixed;
+  width: 600px; height: 600px;
+  border-radius: 50%;
+  left: 50%; top: 50%;
+  transform: translate(-50%, -50%);
+  background: radial-gradient(circle,
+    rgba(255, 100, 150, 0.06) 0%,
+    transparent 70%
+  );
+  pointer-events: none;
+  z-index: 1;
+  animation: heartbeatGlow 2.4s ease-in-out infinite;
+}
+
+@keyframes heartbeatGlow {
+  0%, 100% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+  14%  { transform: translate(-50%, -50%) scale(1.06); opacity: 0.85; }
+  28%  { transform: translate(-50%, -50%) scale(1); }
+  42%  { transform: translate(-50%, -50%) scale(1.03); opacity: 0.9; }
+  56%  { transform: translate(-50%, -50%) scale(1); }
+}
+
+/* ── Tap ripple ── */
+.tap-ripple {
+  position: fixed;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 160, 200, 0.6);
+  pointer-events: none;
+  z-index: 8;
+  transform: translate(-50%, -50%) scale(0);
+  animation: rippleOut 0.7s ease forwards;
+}
+
+@keyframes rippleOut {
+  to { transform: translate(-50%, -50%) scale(1); opacity: 0; }
+}
+</style>
+</head>
+<body>
+
+<div id="cursor">💋</div>
+<canvas id="sky"></canvas>
+<canvas id="fx"></canvas>
+<div id="heartbeat-glow"></div>
+
+<div id="stage">
+  <p id="top-label">for my princess ♡</p>
+
+  <div id="counter-wrap">
+    <p id="count-number">0</p>
+    <p id="count-sub">kisses sent to you</p>
+  </div>
+
+  <button id="kiss-btn" onclick="sendKiss(event)">
+    <div class="outer-ring"></div>
+    <span id="kiss-icon">💋</span>
+    <span id="kiss-hint">tap me</span>
+  </button>
+</div>
+
+<div id="milestone">
+  <div id="milestone-emoji">🥹</div>
+  <p id="milestone-text"></p>
+  <button id="milestone-close" onclick="closeMilestone()">continue ♡</button>
+</div>
+
+<a href="index.html" id="back-link">← back</a>
+
+<script type="module">
+import { initializeApp, getApps, getApp } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-app.js";
+import { getFirestore, doc, getDoc, setDoc, increment } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js";
+import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-auth.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyCc2BHnL7JKAi8N9HSjsWYV35e3YtWTjxU",
+  authDomain: "baneen-2f47c.firebaseapp.com",
+  projectId: "baneen-2f47c",
+  storageBucket: "baneen-2f47c.firebasestorage.app",
+  messagingSenderId: "955214840494",
+  appId: "1:955214840494:web:9c41429a87943cb7ae633f"
+};
+
+const app = getApps().length ? getApp() : initializeApp(firebaseConfig);
+const db  = getFirestore(app);
+const auth = getAuth(app);
+
+// ── Auth guard ──────────────────────────────────────────────
+onAuthStateChanged(auth, (user) => {
+  if (!user) {
+    window.location.href = 'index.html';
+  } else {
+    document.getElementById('stage').style.visibility = 'visible';
+    loadCount();
+  }
+});
+
+// ── Milestones ──────────────────────────────────────────────
+const milestones = {
+  1:    { emoji: '💋', text: 'The very first kiss… I hope there are millions more to come.' },
+  10:   { emoji: '🥰', text: 'Ten kisses already. You are so cute for doing this.' },
+  25:   { emoji: '✨', text: 'Twenty-five kisses. I feel every single one.' },
+  50:   { emoji: '🌸', text: 'Fifty kisses. Jij bent echt het liefste wat er is.' },
+  100:  { emoji: '🎀', text: 'One hundred kisses! Baby… I love you so much it hurts.' },
+  250:  { emoji: '💫', text: 'Two hundred and fifty. I would take a thousand more.' },
+  500:  { emoji: '🌙', text: 'Five hundred kisses. Op dit tempo kus je mij elke dag opnieuw.' },
+  1000: { emoji: '👑', text: 'One thousand kisses. You are quite literally everything.' },
+};
+
+let currentCount = 0;
+let isAnimating = false;
+
+// ── Load count ──────────────────────────────────────────────
+async function loadCount() {
+  try {
+    const snap = await getDoc(doc(db, 'meta', 'kisses'));
+    currentCount = snap.exists() ? (snap.data().count || 0) : 0;
+    animateCounterTo(currentCount, false);
+  } catch (e) {
+    console.error(e);
+  }
+}
+
+// ── Animated number roll ────────────────────────────────────
+function animateCounterTo(target, animate = true) {
+  const el = document.getElementById('count-number');
+  if (!animate) { el.textContent = target; return; }
+
+  const start = currentCount - 1;
+  const duration = 280;
+  const startTime = performance.now();
+
+  function step(now) {
+    const p = Math.min((now - startTime) / duration, 1);
+    const eased = 1 - Math.pow(1 - p, 3);
+    el.textContent = Math.round(start + (target - start) * eased);
+    if (p < 1) requestAnimationFrame(step);
+    else el.textContent = target;
+  }
+
+  requestAnimationFrame(step);
+  el.classList.remove('bump');
+  void el.offsetWidth;
+  el.classList.add('bump');
+}
+
+// ── Update sub text ─────────────────────────────────────────
+function updateSub(count) {
+  const el = document.getElementById('count-sub');
+  if (count === 1) el.textContent = 'first kiss ♡';
+  else if (count < 10) el.textContent = 'kisses sent to you';
+  else if (count < 100) el.textContent = 'kisses and counting...';
+  else if (count < 500) el.textContent = 'kisses, and i want more';
+  else el.textContent = 'kisses. you are obsessed ♡';
+}
+
+// ── Send kiss ───────────────────────────────────────────────
+window.sendKiss = async function(e) {
+  if (isAnimating) return;
+  isAnimating = true;
+
+  currentCount++;
+  animateCounterTo(currentCount, true);
+  updateSub(currentCount);
+
+  // Floating kiss emojis from tap position
+  const x = e.clientX || window.innerWidth / 2;
+  const y = e.clientY || window.innerHeight / 2;
+  spawnFloatingKisses(x, y);
+  spawnRipple(x, y);
+  spawnParticleBurst(x, y);
+
+  // Check milestone
+  if (milestones[currentCount]) {
+    setTimeout(() => showMilestone(milestones[currentCount]), 500);
+  }
+
+  try {
+    await setDoc(doc(db, 'meta', 'kisses'), { count: increment(1) }, { merge: true });
+  } catch (e) {
+    console.error(e);
+  }
+
+  setTimeout(() => { isAnimating = false; }, 150);
+};
+
+// ── Floating kisses ─────────────────────────────────────────
+const kissEmojis = ['💋', '💋', '💋', '♡', '💗', '💕'];
+
+function spawnFloatingKisses(x, y) {
+  const count = 4 + Math.floor(Math.random() * 4);
+  for (let i = 0; i < count; i++) {
+    setTimeout(() => {
+      const el = document.createElement('div');
+      el.className = 'float-kiss';
+      el.textContent = kissEmojis[Math.floor(Math.random() * kissEmojis.length)];
+      el.style.left = (x + (Math.random() - 0.5) * 80) + 'px';
+      el.style.top  = (y - 20) + 'px';
+      el.style.fontSize = (16 + Math.random() * 14) + 'px';
+      el.style.animationDuration = (1.4 + Math.random() * 0.8) + 's';
+      document.body.appendChild(el);
+      setTimeout(() => el.remove(), 2400);
+    }, i * 60);
+  }
+}
+
+// ── Ripple ──────────────────────────────────────────────────
+function spawnRipple(x, y) {
+  const el = document.createElement('div');
+  el.className = 'tap-ripple';
+  el.style.left = x + 'px';
+  el.style.top  = y + 'px';
+  el.style.width = '120px';
+  el.style.height = '120px';
+  document.body.appendChild(el);
+  setTimeout(() => el.remove(), 800);
+}
+
+// ── Canvas particles ────────────────────────────────────────
+const fxCanvas = document.getElementById('fx');
+const fxCtx = fxCanvas.getContext('2d');
+let particles = [];
+let pFrame = null;
+
+function resizeFx() { fxCanvas.width = window.innerWidth; fxCanvas.height = window.innerHeight; }
+resizeFx();
+window.addEventListener('resize', resizeFx);
+
+function spawnParticleBurst(x, y) {
+  const colors = ['255,160,200','255,120,170','255,200,220','220,140,180','255,180,210'];
+  for (let i = 0; i < 28; i++) {
+    const angle = Math.random() * Math.PI * 2;
+    const speed = Math.random() * 3 + 0.5;
+    particles.push({
+      x, y,
+      vx: Math.cos(angle) * speed * 0.8,
+      vy: Math.sin(angle) * speed - 1.5,
+      r: Math.random() * 2.2 + 0.5,
+      life: 1,
+      decay: Math.random() * 0.016 + 0.007,
+      color: colors[Math.floor(Math.random() * colors.length)]
+    });
+  }
+  if (!pFrame) animParticles();
+}
+
+function animParticles() {
+  fxCtx.clearRect(0, 0, fxCanvas.width, fxCanvas.height);
+  particles = particles.filter(p => p.life > 0);
+  for (const p of particles) {
+    fxCtx.beginPath();
+    fxCtx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+    fxCtx.fillStyle = `rgba(${p.color},${p.life * 0.9})`;
+    fxCtx.fill();
+    p.x += p.vx; p.y += p.vy; p.vy += 0.05; p.life -= p.decay;
+  }
+  pFrame = particles.length > 0 ? requestAnimationFrame(animParticles) : null;
+}
+
+// ── Milestone ───────────────────────────────────────────────
+window.showMilestone = function(m) {
+  document.getElementById('milestone-emoji').textContent = m.emoji;
+  document.getElementById('milestone-text').textContent = m.text;
+  document.getElementById('milestone').classList.add('show');
+};
+
+window.closeMilestone = function() {
+  document.getElementById('milestone').classList.remove('show');
+};
+
+// ── Custom cursor ────────────────────────────────────────────
+const cursor = document.getElementById('cursor');
+document.addEventListener('mousemove', e => {
+  cursor.style.left = e.clientX + 'px';
+  cursor.style.top  = e.clientY + 'px';
+});
+document.addEventListener('mousedown', () => cursor.classList.add('pressed'));
+document.addEventListener('mouseup',   () => cursor.classList.remove('pressed'));
+
+// ── Stars ───────────────────────────────────────────────────
+(function() {
+  const canvas = document.getElementById('sky');
+  const ctx = canvas.getContext('2d');
+  let stars = [];
+
+  function resize() {
+    canvas.width = window.innerWidth; canvas.height = window.innerHeight;
+    stars = [];
+    const count = Math.floor(canvas.width * canvas.height / 7000);
+    for (let i = 0; i < count; i++) stars.push({
+      x: Math.random() * canvas.width,
+      y: Math.random() * canvas.height,
+      r: Math.random() * 0.9 + 0.2,
+      a: Math.random() * 0.45 + 0.08,
+      speed: Math.random() * 0.003 + 0.001,
+      phase: Math.random() * Math.PI * 2,
+      hue: 340 + Math.random() * 40  // pinkish stars
+    });
+  }
+
+  let t = 0;
+  function draw() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    const grad = ctx.createRadialGradient(
+      canvas.width * 0.5, canvas.height * 0.45, 0,
+      canvas.width * 0.5, canvas.height * 0.45, canvas.width * 0.7
+    );
+    grad.addColorStop(0, 'rgba(40, 10, 28, 0.6)');
+    grad.addColorStop(1, 'rgba(0,0,0,0)');
+    ctx.fillStyle = grad;
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    for (const s of stars) {
+      const alpha = s.a * (0.6 + 0.4 * Math.sin(t * s.speed * 60 + s.phase));
+      ctx.beginPath(); ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+      ctx.fillStyle = `hsla(${s.hue}, 70%, 90%, ${alpha})`;
+      ctx.fill();
+    }
+    t += 0.016;
+    requestAnimationFrame(draw);
+  }
+
+  window.addEventListener('resize', resize);
+  resize(); draw();
+})();
+</script>
+
+</body>
+</html>
