@@ -1,0 +1,528 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<title>for us</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=Jost:wght@300;400&display=swap" rel="stylesheet" />
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body {
+  min-height: 100%;
+  background: #07091a;
+  font-family: 'Jost', sans-serif;
+  color: #ffe0ec;
+  overflow-x: hidden;
+}
+
+#cursor {
+  position: fixed;
+  pointer-events: none;
+  z-index: 9999;
+  transform: translate(-50%, -50%);
+  transition: transform 0.1s ease;
+  font-size: 16px;
+  line-height: 1;
+}
+#cursor.pressed { transform: translate(-50%, -50%) scale(1.5); }
+
+canvas#sky {
+  position: fixed; inset: 0;
+  width: 100%; height: 100%;
+  pointer-events: none;
+  z-index: 0;
+}
+
+#heartbeat-glow {
+  position: fixed;
+  width: 700px; height: 700px;
+  border-radius: 50%;
+  left: 50%; top: 40%;
+  transform: translate(-50%, -50%);
+  background: radial-gradient(circle, rgba(255, 100, 150, 0.05) 0%, transparent 70%);
+  pointer-events: none;
+  z-index: 1;
+  animation: heartbeatGlow 2.4s ease-in-out infinite;
+}
+
+@keyframes heartbeatGlow {
+  0%, 100% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+  14%  { transform: translate(-50%, -50%) scale(1.06); opacity: 0.85; }
+  28%  { transform: translate(-50%, -50%) scale(1); }
+  42%  { transform: translate(-50%, -50%) scale(1.03); opacity: 0.9; }
+  56%  { transform: translate(-50%, -50%) scale(1); }
+}
+
+#app {
+  position: relative;
+  z-index: 5;
+  max-width: 680px;
+  margin: 0 auto;
+  padding: 60px 24px 100px;
+  opacity: 0;
+  animation: fadeUp 1s ease 0.3s forwards;
+}
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+#page-title {
+  font-family: 'Cormorant Garamond', serif;
+  font-weight: 300;
+  font-style: italic;
+  font-size: clamp(28px, 7vw, 40px);
+  color: #ffe0ec;
+  text-align: center;
+  margin-bottom: 8px;
+  letter-spacing: 0.04em;
+}
+
+#page-sub {
+  font-weight: 300;
+  font-size: 10px;
+  letter-spacing: 0.3em;
+  text-transform: lowercase;
+  color: rgba(255, 180, 200, 0.3);
+  text-align: center;
+  margin-bottom: 48px;
+}
+
+/* TABS */
+#tabs {
+  display: flex;
+  gap: 0;
+  margin-bottom: 32px;
+  border-bottom: 1px solid rgba(255, 160, 200, 0.12);
+}
+
+.tab-btn {
+  flex: 1;
+  background: none;
+  border: none;
+  padding: 14px 0;
+  font-family: 'Jost', sans-serif;
+  font-weight: 300;
+  font-size: 11px;
+  letter-spacing: 0.28em;
+  text-transform: lowercase;
+  color: rgba(255, 170, 200, 0.35);
+  cursor: pointer;
+  position: relative;
+  transition: color 0.3s ease;
+}
+
+.tab-btn::after {
+  content: '';
+  position: absolute;
+  bottom: -1px; left: 50%; right: 50%;
+  height: 1px;
+  background: rgba(255, 160, 200, 0.6);
+  transition: left 0.3s ease, right 0.3s ease;
+}
+
+.tab-btn.active {
+  color: rgba(255, 200, 220, 0.85);
+}
+
+.tab-btn.active::after {
+  left: 0; right: 0;
+}
+
+/* WRITE SECTION */
+#write-section {
+  margin-bottom: 48px;
+}
+
+#write-label {
+  font-weight: 300;
+  font-size: 9px;
+  letter-spacing: 0.32em;
+  text-transform: lowercase;
+  color: rgba(255, 170, 200, 0.28);
+  margin-bottom: 12px;
+}
+
+#write-area {
+  width: 100%;
+  min-height: 160px;
+  background: rgba(255, 160, 200, 0.04);
+  border: 1px solid rgba(255, 160, 200, 0.12);
+  border-radius: 14px;
+  padding: 20px 22px;
+  font-family: 'Cormorant Garamond', serif;
+  font-weight: 300;
+  font-style: italic;
+  font-size: clamp(16px, 4vw, 19px);
+  line-height: 1.7;
+  color: #ffe0ec;
+  resize: none;
+  outline: none;
+  transition: border-color 0.3s ease, background 0.3s ease;
+  caret-color: rgba(255, 160, 200, 0.7);
+}
+
+#write-area::placeholder {
+  color: rgba(255, 170, 200, 0.2);
+  font-style: italic;
+}
+
+#write-area:focus {
+  border-color: rgba(255, 160, 200, 0.28);
+  background: rgba(255, 160, 200, 0.06);
+}
+
+#save-btn {
+  margin-top: 14px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: none;
+  border: 1px solid rgba(255, 160, 200, 0.22);
+  border-radius: 24px;
+  padding: 9px 22px;
+  font-family: 'Jost', sans-serif;
+  font-weight: 300;
+  font-size: 10px;
+  letter-spacing: 0.26em;
+  text-transform: lowercase;
+  color: rgba(255, 180, 210, 0.6);
+  cursor: pointer;
+  transition: color 0.3s, border-color 0.3s, background 0.3s;
+}
+
+#save-btn:hover {
+  color: rgba(255, 200, 225, 0.9);
+  border-color: rgba(255, 160, 200, 0.45);
+  background: rgba(255, 160, 200, 0.06);
+}
+
+#save-btn.saving {
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+#save-feedback {
+  margin-top: 10px;
+  font-size: 10px;
+  letter-spacing: 0.2em;
+  color: rgba(255, 180, 200, 0.4);
+  height: 14px;
+  transition: opacity 0.4s;
+}
+
+/* DIVIDER */
+.section-divider {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 32px;
+}
+
+.section-divider span {
+  font-weight: 300;
+  font-size: 9px;
+  letter-spacing: 0.32em;
+  text-transform: lowercase;
+  color: rgba(255, 170, 200, 0.25);
+  white-space: nowrap;
+}
+
+.section-divider::before,
+.section-divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: rgba(255, 160, 200, 0.08);
+}
+
+/* ENTRIES */
+#entries-list {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.entry-card {
+  background: rgba(255, 160, 200, 0.03);
+  border: 1px solid rgba(255, 160, 200, 0.09);
+  border-radius: 16px;
+  padding: 24px 26px;
+  animation: fadeUp 0.6s ease forwards;
+  opacity: 0;
+}
+
+.entry-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 14px;
+}
+
+.entry-author {
+  font-weight: 300;
+  font-size: 9px;
+  letter-spacing: 0.28em;
+  text-transform: lowercase;
+  color: rgba(255, 160, 200, 0.4);
+}
+
+.entry-date {
+  font-weight: 300;
+  font-size: 9px;
+  letter-spacing: 0.15em;
+  color: rgba(255, 160, 200, 0.22);
+}
+
+.entry-text {
+  font-family: 'Cormorant Garamond', serif;
+  font-weight: 300;
+  font-style: italic;
+  font-size: clamp(16px, 3.5vw, 19px);
+  line-height: 1.75;
+  color: rgba(255, 224, 236, 0.88);
+  white-space: pre-wrap;
+}
+
+.entry-heart {
+  margin-top: 14px;
+  font-size: 11px;
+  color: rgba(255, 160, 200, 0.25);
+}
+
+#empty-state {
+  text-align: center;
+  padding: 48px 0;
+  font-family: 'Cormorant Garamond', serif;
+  font-style: italic;
+  font-size: 18px;
+  color: rgba(255, 170, 200, 0.2);
+}
+
+#loading-state {
+  text-align: center;
+  padding: 48px 0;
+  font-size: 10px;
+  letter-spacing: 0.25em;
+  color: rgba(255, 170, 200, 0.2);
+}
+
+#back-link {
+  position: fixed; bottom: 28px; left: 50%;
+  transform: translateX(-50%);
+  font-weight: 300; font-size: 11px;
+  letter-spacing: 0.2em; text-transform: lowercase;
+  color: rgba(255, 170, 200, 0.22);
+  text-decoration: none;
+  transition: color 0.2s;
+  z-index: 20;
+}
+#back-link:hover { color: rgba(255, 200, 220, 0.6); }
+</style>
+</head>
+<body>
+
+<div id="cursor">♡</div>
+<canvas id="sky"></canvas>
+<div id="heartbeat-glow"></div>
+
+<div id="app">
+  <p id="page-title">words for us</p>
+  <p id="page-sub">paragraphs, love notes & reassurances</p>
+
+  <div id="tabs">
+    <button class="tab-btn active" onclick="switchTab('mo')" id="tab-mo">for mo</button>
+    <button class="tab-btn" onclick="switchTab('baneen')" id="tab-baneen">for baneen</button>
+  </div>
+
+  <div id="write-section">
+    <p id="write-label">write something…</p>
+    <textarea id="write-area" placeholder="type your words here, take your time…" rows="6"></textarea>
+    <button id="save-btn" onclick="saveEntry()">
+      <span>save</span> <span>♡</span>
+    </button>
+    <p id="save-feedback"></p>
+  </div>
+
+  <div class="section-divider"><span>previous words</span></div>
+
+  <div id="entries-list">
+    <p id="loading-state">loading…</p>
+  </div>
+</div>
+
+<a href="index.html" id="back-link">← back</a>
+
+<script type="module">
+import { initializeApp, getApps, getApp } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-app.js";
+import { getFirestore, collection, doc, addDoc, query, orderBy, onSnapshot, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js";
+import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-auth.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyCc2BHnL7JKAi8N9HSjsWYV35e3YtWTjxU",
+  authDomain: "baneen-2f47c.firebaseapp.com",
+  projectId: "baneen-2f47c",
+  storageBucket: "baneen-2f47c.firebasestorage.app",
+  messagingSenderId: "955214840494",
+  appId: "1:955214840494:web:9c41429a87943cb7ae633f"
+};
+
+const app = getApps().length ? getApp() : initializeApp(firebaseConfig);
+const db  = getFirestore(app);
+const auth = getAuth(app);
+
+let currentTab = 'mo';
+let currentUser = null;
+let unsubscribe = null;
+
+onAuthStateChanged(auth, (user) => {
+  if (!user) {
+    window.location.href = 'index.html';
+  } else {
+    currentUser = user;
+    document.getElementById('app').style.opacity = '1';
+    loadEntries('mo');
+  }
+});
+
+window.switchTab = function(tab) {
+  currentTab = tab;
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('tab-' + tab).classList.add('active');
+  document.getElementById('write-area').value = '';
+  document.getElementById('save-feedback').textContent = '';
+  loadEntries(tab);
+};
+
+function loadEntries(tab) {
+  const list = document.getElementById('entries-list');
+  list.innerHTML = '<p id="loading-state">loading…</p>';
+
+  if (unsubscribe) unsubscribe();
+
+  const q = query(
+    collection(db, 'letters', tab, 'entries'),
+    orderBy('createdAt', 'desc')
+  );
+
+  unsubscribe = onSnapshot(q, (snap) => {
+    list.innerHTML = '';
+    if (snap.empty) {
+      list.innerHTML = '<p id="empty-state">no words yet… be the first ♡</p>';
+      return;
+    }
+    snap.forEach((docSnap, i) => {
+      const d = docSnap.data();
+      const card = document.createElement('div');
+      card.className = 'entry-card';
+      card.style.animationDelay = (i * 0.07) + 's';
+
+      const date = d.createdAt?.toDate
+        ? d.createdAt.toDate().toLocaleDateString('nl-NL', { day: 'numeric', month: 'long', year: 'numeric' })
+        : '…';
+
+      card.innerHTML = `
+        <div class="entry-meta">
+          <span class="entry-author">${d.author || 'anonymous'}</span>
+          <span class="entry-date">${date}</span>
+        </div>
+        <p class="entry-text">${escapeHtml(d.text)}</p>
+        <p class="entry-heart">♡</p>
+      `;
+      list.appendChild(card);
+    });
+  }, (err) => {
+    console.error(err);
+    list.innerHTML = '<p id="empty-state">something went wrong…</p>';
+  });
+}
+
+window.saveEntry = async function() {
+  const text = document.getElementById('write-area').value.trim();
+  if (!text) return;
+
+  const btn = document.getElementById('save-btn');
+  const feedback = document.getElementById('save-feedback');
+  btn.classList.add('saving');
+  feedback.textContent = 'saving…';
+
+  try {
+    // Figure out author name from email or displayName
+    const email = currentUser.email || '';
+    const name = currentUser.displayName || (email.includes('mo') ? 'mo' : email.split('@')[0]);
+
+    await addDoc(collection(db, 'letters', currentTab, 'entries'), {
+      text,
+      author: name,
+      createdAt: serverTimestamp()
+    });
+
+    document.getElementById('write-area').value = '';
+    feedback.textContent = 'saved ♡';
+    setTimeout(() => { feedback.textContent = ''; }, 3000);
+  } catch (e) {
+    console.error(e);
+    feedback.textContent = 'something went wrong…';
+  }
+
+  btn.classList.remove('saving');
+};
+
+function escapeHtml(str) {
+  return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// cursor
+const cursor = document.getElementById('cursor');
+document.addEventListener('mousemove', e => {
+  cursor.style.left = e.clientX + 'px';
+  cursor.style.top  = e.clientY + 'px';
+});
+document.addEventListener('mousedown', () => cursor.classList.add('pressed'));
+document.addEventListener('mouseup',   () => cursor.classList.remove('pressed'));
+
+// stars
+(function() {
+  const canvas = document.getElementById('sky');
+  const ctx = canvas.getContext('2d');
+  let stars = [];
+
+  function resize() {
+    canvas.width = window.innerWidth; canvas.height = window.innerHeight;
+    stars = [];
+    const count = Math.floor(canvas.width * canvas.height / 7000);
+    for (let i = 0; i < count; i++) stars.push({
+      x: Math.random() * canvas.width,
+      y: Math.random() * canvas.height,
+      r: Math.random() * 0.9 + 0.2,
+      a: Math.random() * 0.45 + 0.08,
+      speed: Math.random() * 0.003 + 0.001,
+      phase: Math.random() * Math.PI * 2,
+      hue: 340 + Math.random() * 40
+    });
+  }
+
+  let t = 0;
+  function draw() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    for (const s of stars) {
+      const alpha = s.a * (0.6 + 0.4 * Math.sin(t * s.speed * 60 + s.phase));
+      ctx.beginPath(); ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+      ctx.fillStyle = `hsla(${s.hue}, 70%, 90%, ${alpha})`;
+      ctx.fill();
+    }
+    t += 0.016;
+    requestAnimationFrame(draw);
+  }
+
+  window.addEventListener('resize', resize);
+  resize(); draw();
+})();
+</script>
+
+</body>
+</html>
