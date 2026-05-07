@@ -322,6 +322,110 @@ canvas#sky {
   z-index: 20;
 }
 #back-link:hover { color: rgba(255, 200, 220, 0.6); }
+
+.entry-card {
+  cursor: pointer;
+}
+.entry-card:hover {
+  border-color: rgba(255, 160, 200, 0.2);
+  background: rgba(255, 160, 200, 0.06);
+  transition: border-color 0.2s, background 0.2s;
+}
+
+/* MODAL */
+#entry-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: rgba(4, 6, 18, 0.75);
+  backdrop-filter: blur(14px);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+}
+#entry-modal.show {
+  opacity: 1;
+  pointer-events: all;
+}
+#modal-card {
+  background: #0d0f24;
+  border: 1px solid rgba(255, 160, 200, 0.16);
+  border-radius: 22px;
+  padding: 36px 32px 28px;
+  max-width: min(560px, 92vw);
+  width: 100%;
+  transform: scale(0.94) translateY(10px);
+  transition: transform 0.3s ease;
+  max-height: 80vh;
+  overflow-y: auto;
+}
+#entry-modal.show #modal-card {
+  transform: scale(1) translateY(0);
+}
+#modal-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+#modal-author {
+  font-size: 9px;
+  letter-spacing: 0.28em;
+  text-transform: lowercase;
+  color: rgba(255, 160, 200, 0.4);
+}
+#modal-date {
+  font-size: 9px;
+  letter-spacing: 0.15em;
+  color: rgba(255, 160, 200, 0.22);
+}
+#modal-text {
+  font-family: 'Cormorant Garamond', serif;
+  font-weight: 300;
+  font-style: italic;
+  font-size: clamp(17px, 4vw, 21px);
+  line-height: 1.8;
+  color: rgba(255, 224, 236, 0.92);
+  white-space: pre-wrap;
+  margin-bottom: 28px;
+}
+#modal-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+#modal-close {
+  background: none;
+  border: none;
+  font-size: 10px;
+  letter-spacing: 0.22em;
+  text-transform: lowercase;
+  color: rgba(255, 170, 200, 0.3);
+  cursor: pointer;
+  transition: color 0.2s;
+}
+#modal-close:hover { color: rgba(255, 200, 220, 0.7); }
+#modal-delete {
+  background: none;
+  border: 1px solid rgba(255, 100, 130, 0.18);
+  border-radius: 20px;
+  padding: 7px 18px;
+  font-size: 9px;
+  letter-spacing: 0.22em;
+  text-transform: lowercase;
+  color: rgba(255, 120, 140, 0.4);
+  cursor: pointer;
+  transition: color 0.2s, border-color 0.2s, background 0.2s;
+}
+#modal-delete:hover {
+  color: rgba(255, 120, 140, 0.85);
+  border-color: rgba(255, 100, 130, 0.45);
+  background: rgba(255, 100, 130, 0.06);
+}
 </style>
 </head>
 <body>
@@ -357,9 +461,23 @@ canvas#sky {
 
 <a href="index.html" id="back-link">← back</a>
 
+<div id="entry-modal" onclick="handleModalBgClick(event)">
+  <div id="modal-card">
+    <div id="modal-meta">
+      <span id="modal-author"></span>
+      <span id="modal-date"></span>
+    </div>
+    <p id="modal-text"></p>
+    <div id="modal-actions">
+      <button id="modal-close" onclick="closeModal()">close</button>
+      <button id="modal-delete" onclick="deleteEntry()">delete</button>
+    </div>
+  </div>
+</div>
+
 <script type="module">
 import { initializeApp, getApps, getApp } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-app.js";
-import { getFirestore, collection, doc, addDoc, query, orderBy, onSnapshot, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js";
+import { getFirestore, collection, doc, addDoc, deleteDoc, query, orderBy, onSnapshot, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js";
 import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-auth.js";
 
 const firebaseConfig = {
@@ -378,6 +496,7 @@ const auth = getAuth(app);
 let currentTab = 'mo';
 let currentUser = null;
 let unsubscribe = null;
+let activeEntryId = null;
 
 onAuthStateChanged(auth, (user) => {
   if (!user) {
@@ -396,6 +515,38 @@ window.switchTab = function(tab) {
   document.getElementById('write-area').value = '';
   document.getElementById('save-feedback').textContent = '';
   loadEntries(tab);
+};
+
+function openModal(entryId, author, date, text) {
+  activeEntryId = entryId;
+  document.getElementById('modal-author').textContent = author;
+  document.getElementById('modal-date').textContent = date;
+  document.getElementById('modal-text').textContent = text;
+  document.getElementById('entry-modal').classList.add('show');
+}
+
+window.closeModal = function() {
+  document.getElementById('entry-modal').classList.remove('show');
+  activeEntryId = null;
+};
+
+window.handleModalBgClick = function(e) {
+  if (e.target === document.getElementById('entry-modal')) closeModal();
+};
+
+window.deleteEntry = async function() {
+  if (!activeEntryId) return;
+  const btn = document.getElementById('modal-delete');
+  btn.textContent = 'deleting…';
+  btn.style.pointerEvents = 'none';
+  try {
+    await deleteDoc(doc(db, 'letters', currentTab, 'entries', activeEntryId));
+    closeModal();
+  } catch (e) {
+    console.error(e);
+    btn.textContent = 'delete';
+    btn.style.pointerEvents = '';
+  }
 };
 
 function loadEntries(tab) {
@@ -433,6 +584,7 @@ function loadEntries(tab) {
         <p class="entry-text">${escapeHtml(d.text)}</p>
         <p class="entry-heart">♡</p>
       `;
+      card.addEventListener('click', () => openModal(docSnap.id, d.author || 'anonymous', date, d.text));
       list.appendChild(card);
     });
   }, (err) => {
